@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Video for Mahta</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    iframe {
+      width: 90%;
+      height: 90%;
+      border: 5px solid #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.5);
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Embedded Google Drive video -->
+  <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay"></iframe>
+
+  <canvas id="confetti"></canvas>
+
+  <script>
+    // Confetti effect 🎉
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let confetti = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfetti() {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        size: Math.random() * 8 + 4,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+        speed: Math.random() * 3 + 2,
+        drift: Math.random() - 0.5
+      };
+    }
+
+    function updateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach((c, i) => {
+        c.y += c.speed;
+        c.x += c.drift;
+        ctx.fillStyle = c.color;
+        ctx.fillRect(c.x, c.y, c.size, c.size);
+        if (c.y > canvas.height) confetti[i] = createConfetti();
+      });
+      requestAnimationFrame(updateConfetti);
+    }
+
+    for (let i = 0; i < 150; i++) confetti.push(createConfetti());
+    updateConfetti();
+  </script>
+</body>
+</html>
