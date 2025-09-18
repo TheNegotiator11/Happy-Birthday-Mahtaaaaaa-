@@ -9,6 +9,7 @@
       text-align: center;
       background: linear-gradient(to right, #ffdde1, #ee9ca7);
       font-family: Arial, sans-serif;
+      overflow-x: hidden;
     }
     h1 {
       margin-top: 20px;
@@ -18,23 +19,22 @@
     .cake {
       margin: 50px auto;
       position: relative;
-      width: 300px;
-      height: 200px;
+      width: 600px;
+      height: 250px;
       background: #f5c6aa;
       border-radius: 10px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
     .candle {
-      width: 15px;
-      height: 50px;
+      width: 12px;
+      height: 60px;
       background: #fff;
       position: absolute;
-      top: -50px;
+      top: -60px;
       border-radius: 3px;
-      cursor: pointer;
     }
     .flame {
-      width: 15px;
+      width: 12px;
       height: 20px;
       background: radial-gradient(circle at center, yellow 40%, orange 70%, transparent 100%);
       border-radius: 50%;
@@ -53,39 +53,90 @@
       color: #fff;
       display: none;
     }
+    #startBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #ff7aa2;
+      color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    #startBtn:hover {
+      background: #ff4f84;
+    }
   </style>
 </head>
 <body>
-  <h1>🎂 Blow the Candles, Mahta! 🎂</h1>
-  <div class="cake" id="cake">
-    <div class="candle" style="left:40px"><div class="flame"></div></div>
-    <div class="candle" style="left:90px"><div class="flame"></div></div>
-    <div class="candle" style="left:140px"><div class="flame"></div></div>
-    <div class="candle" style="left:190px"><div class="flame"></div></div>
-    <div class="candle" style="left:240px"><div class="flame"></div></div>
-  </div>
-  <div id="message">🎉 Yay! Happy 17th Birthday, Mahta! 🎉</div>
+  <h1>🎂 Blow the 17 Candles, Mahta! 🎂</h1>
+  <button id="startBtn">🎤 Enable Microphone</button>
+  <div class="cake" id="cake"></div>
+  <div id="message">🎉 Yay! All 17 candles are out! Happy 17th Birthday, Mahta! 🎉</div>
 
   <script>
-    const candles = document.querySelectorAll(".candle");
+    const cake = document.getElementById("cake");
     const message = document.getElementById("message");
+    const startBtn = document.getElementById("startBtn");
+    let blownCandles = 0;
 
-    candles.forEach(candle => {
-      candle.addEventListener("click", () => {
-        const flame = candle.querySelector(".flame");
-        if (flame) {
-          flame.remove();
+    // Create 17 candles evenly spaced
+    for (let i = 0; i < 17; i++) {
+      const candle = document.createElement("div");
+      candle.classList.add("candle");
+      candle.style.left = (20 + i * 32) + "px"; // spacing
+      const flame = document.createElement("div");
+      flame.classList.add("flame");
+      candle.appendChild(flame);
+      cake.appendChild(candle);
+    }
+
+    function blowOutCandle() {
+      const flames = document.querySelectorAll(".flame");
+      if (flames.length > 0) {
+        // Remove the first flame
+        flames[0].remove();
+        blownCandles++;
+        if (blownCandles === 17) {
+          message.style.display = "block";
         }
-        checkAllOut();
-      });
-    });
-
-    function checkAllOut() {
-      const flamesLeft = document.querySelectorAll(".flame").length;
-      if (flamesLeft === 0) {
-        message.style.display = "block";
       }
     }
+
+    async function initMic() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.fftSize);
+        function detectBlow() {
+          analyser.getByteTimeDomainData(dataArray);
+          let rms = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            let val = (dataArray[i] - 128) / 128;
+            rms += val * val;
+          }
+          rms = Math.sqrt(rms / dataArray.length);
+
+          if (rms > 0.1) { // threshold for blowing
+            blowOutCandle();
+          }
+          requestAnimationFrame(detectBlow);
+        }
+        detectBlow();
+      } catch (err) {
+        alert("Microphone access denied. Please allow microphone to blow candles.");
+      }
+    }
+
+    startBtn.addEventListener("click", () => {
+      startBtn.style.display = "none";
+      initMic();
+    });
   </script>
 </body>
 </html>
