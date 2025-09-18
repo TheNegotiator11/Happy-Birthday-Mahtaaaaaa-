@@ -9,6 +9,7 @@
       margin: 0;
       background: #000;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -16,7 +17,7 @@
     }
     iframe {
       width: 90%;
-      height: 90%;
+      height: 80%;
       border: 5px solid #fff;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(255,255,255,0.5);
@@ -29,11 +30,31 @@
       pointer-events: none;
       z-index: 2;
     }
+    .home-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #ff66b2;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      z-index: 3;
+    }
+    .home-btn:hover {
+      background: #ff3385;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
   <!-- Embedded Google Drive video -->
   <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay"></iframe>
+
+  <!-- Back button -->
+  <button class="home-btn" onclick="window.location.href='index.html'">🎂 Back to Home</button>
 
   <canvas id="confetti"></canvas>
 
