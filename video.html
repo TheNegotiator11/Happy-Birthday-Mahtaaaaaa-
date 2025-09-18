@@ -1,65 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Birthday Video for Mahta</title>
-  <style>
-    body { margin:0; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; overflow:hidden; }
-    iframe {
-      width:90%;
-      height:80%;
-      border:5px solid #fff;
-      border-radius:10px;
-      box-shadow:0 0 20px rgba(255,255,255,0.35);
-      z-index:1;
-    }
-    .home-btn {
-      margin-top:12px;
-      padding:10px 18px;
-      background:#ff66b2;
-      color:white;
-      font-weight:700;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-      z-index:3;
-    }
-    canvas { position:fixed; left:0; top:0; pointer-events:none; z-index:2; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Birthday Video for Mahta</title>
+<style>
+  body {
+    margin:0;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  .video-wrapper {
+    position:relative;
+    width:90%;
+    max-width:400px; /* optional: limits max size on desktop */
+    aspect-ratio:9/16; /* vertical video */
+    margin-top:20px;
+  }
+  iframe {
+    width:100%;
+    height:100%;
+    border:5px solid #fff;
+    border-radius:12px;
+    box-shadow:0 0 20px rgba(255,255,255,0.35);
+  }
+  .home-btn {
+    margin-top:12px;
+    padding:10px 18px;
+    background:#ff66b2;
+    color:white;
+    font-weight:700;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    z-index:3;
+  }
+  canvas {
+    position:fixed;
+    left:0;
+    top:0;
+    pointer-events:none;
+    z-index:2;
+  }
+</style>
 </head>
 <body>
-  <!-- Google Drive preview link (use /preview) -->
-  <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay; encrypted-media" ></iframe>
+<div class="video-wrapper">
+  <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay; encrypted-media"></iframe>
+</div>
 
-  <button class="home-btn" onclick="location.href='index.html'">🎂 Back to Home</button>
+<button class="home-btn" onclick="location.href='index.html'">🎂 Back to Home</button>
 
-  <canvas id="confetti"></canvas>
+<canvas id="confetti"></canvas>
 
-  <script>
-    // confetti for only 5 seconds
-    const canvas = document.getElementById('confetti');
-    const ctx = canvas.getContext('2d');
-    let confetti = [], raf;
-    function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
-    addEventListener('resize', resize); resize();
+<script>
+// confetti for only 5 seconds
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+let confetti=[], raf;
+function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+addEventListener('resize', resize); resize();
 
-    function make(){ return { x: Math.random()*canvas.width, y: -Math.random()*canvas.height, s: Math.random()*8+4, c: `hsl(${Math.random()*360},100%,50%)`, vx: (Math.random()-0.5)*1.5, vy: Math.random()*3+2 }; }
-    for(let i=0;i<150;i++) confetti.push(make());
+function make(){ return { x:Math.random()*canvas.width, y:-Math.random()*canvas.height, s:Math.random()*8+4, c:`hsl(${Math.random()*360},100%,50%)`, vx:(Math.random()-0.5)*1.5, vy:Math.random()*3+2 }; }
+for(let i=0;i<150;i++) confetti.push(make());
 
-    function draw(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      confetti.forEach((p,i)=>{
-        p.x += p.vx; p.y += p.vy;
-        ctx.fillStyle = p.c; ctx.fillRect(p.x,p.y,p.s,p.s);
-        if(p.y > canvas.height) confetti[i] = make();
-      });
-      raf = requestAnimationFrame(draw);
-    }
-    draw();
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confetti.forEach((p,i)=>{
+    p.x+=p.vx; p.y+=p.vy;
+    ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s);
+    if(p.y>canvas.height) confetti[i]=make();
+  });
+  raf=requestAnimationFrame(draw);
+}
+draw();
 
-    // stop after 5s
-    setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); }, 5000);
-  </script>
+// stop after 5s
+setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); },5000);
+</script>
 </body>
 </html>
