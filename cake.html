@@ -62,6 +62,7 @@ canvas { position:fixed; top:0; left:0; pointer-events:none; z-index:999; }
 
 <div id="message">🎉 The candle is out! Happy 17th Birthday, Mahta! 🎉</div>
 <button class="home-btn" onclick="location.href='index.html'">🏠 Back to Home</button>
+
 <canvas id="confetti"></canvas>
 
 <script>
@@ -71,10 +72,10 @@ const message = document.getElementById('message');
 const confCanvas = document.getElementById('confetti');
 const confCtx = confCanvas.getContext('2d');
 
-// Position candle dynamically at 2/5 from top of the cake
+// Position candle dynamically at 2/5 from top of the cake, minus 40px
 const cakeImg = document.getElementById('cake');
 function positionCandle() {
-  const y = cakeImg.height * 0.4 - candle.offsetHeight; // 2/5 from top
+  const y = cakeImg.height * 0.4 - candle.offsetHeight - 40; // moved 40px higher
   candle.style.top = y + 'px';
 }
 cakeImg.onload = positionCandle;
@@ -84,32 +85,31 @@ window.addEventListener('resize', positionCandle);
 function blowOut() {
   if(flame){ flame.remove(); }
   message.style.display='block';
-  startConfettiShort(3000);
 }
 
-// Optional tap to blow out
+// Tap to blow out
 candle.addEventListener('click', blowOut);
 
-// Confetti function
+// Confetti function (infinite)
 function resizeConf(){ confCanvas.width=innerWidth; confCanvas.height=innerHeight; }
-addEventListener('resize', resizeConf); resizeConf();
-function startConfettiShort(ms){
-  let pieces=[];
-  for(let i=0;i<200;i++){
-    pieces.push({x:Math.random()*confCanvas.width, y:-Math.random()*confCanvas.height, s:Math.random()*8+4, c:`hsl(${Math.random()*360},100%,50%)`, vx:(Math.random()-0.5)*2, vy:Math.random()*4+2});
-  }
-  let running=true;
-  function step(){
-    confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
-    pieces.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy;
-      confCtx.fillStyle=p.c; confCtx.fillRect(p.x,p.y,p.s,p.s);
-    });
-    if(running) requestAnimationFrame(step);
-  }
-  step();
-  setTimeout(()=>{ running=false; confCtx.clearRect(0,0,confCanvas.width,confCanvas.height); }, ms);
+addEventListener('resize',resizeConf); resizeConf();
+
+let pieces=[];
+for(let i=0;i<200;i++){
+  pieces.push({x:Math.random()*confCanvas.width, y:-Math.random()*confCanvas.height, s:Math.random()*8+4, c:`hsl(${Math.random()*360},100%,50%)`, vx:(Math.random()-0.5)*2, vy:Math.random()*4+2});
 }
+
+function drawConfetti(){
+  confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+  pieces.forEach((p,i)=>{
+    p.x+=p.vx; p.y+=p.vy;
+    confCtx.fillStyle=p.c;
+    confCtx.fillRect(p.x,p.y,p.s,p.s);
+    if(p.y>confCanvas.height) p.y=-p.s;
+  });
+  requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
 
 // Microphone detection immediately on load
 async function initMic(){
@@ -130,7 +130,6 @@ async function initMic(){
         sum+=v*v;
       }
       const rms=Math.sqrt(sum/data.length);
-      // threshold to blow candle; prevents multiple triggers
       if(rms>0.08){
         blowOut();
       }
