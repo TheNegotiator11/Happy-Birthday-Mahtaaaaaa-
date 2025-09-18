@@ -1,130 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Blow the Candles — Mahta</title>
-  <style>
-    body { text-align:center; font-family:Arial,Helvetica,sans-serif; background:linear-gradient(90deg,#ffdde1,#ee9ca7); margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
-    h1 { color:#fff; text-shadow:2px 2px #444; margin-top:26px; }
-    #cake { margin:30px auto; width:680px; height:240px; background:#f5c6aa; border-radius:12px; position:relative; box-shadow:0 6px 16px rgba(0,0,0,0.25); }
-    .candle { position:absolute; top:-62px; width:12px; height:60px; background:#fff; border-radius:3px; transform:translateX(-50%); }
-    .flame { position:absolute; top:-20px; left:0; width:12px; height:20px; border-radius:50%; background:radial-gradient(circle at center, yellow 40%, orange 70%, transparent 100%); animation:flicker .18s infinite alternate; }
-    @keyframes flicker { from {transform:scale(1) translateY(0)} to {transform:scale(1.18) translateY(-2px)} }
-    #startBtn { margin-top:12px; padding:10px 18px; border-radius:8px; border:none; background:#ff7aa2; color:#fff; cursor:pointer; font-weight:700; }
-    #status { margin-top:12px; color:#fff; }
-    #message { display:none; margin-top:18px; font-size:1.2rem; color:#fff; }
-    .home-btn { margin-top:12px; padding:8px 14px; border-radius:8px; border:none; background:#ff66b2; color:#fff; cursor:pointer; font-weight:700; }
-    canvas { position:fixed; top:0; left:0; pointer-events:none; z-index:999; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Blow the Candles — Mahta</title>
+<style>
+  body {
+    text-align:center;
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(90deg,#ffdde1,#ee9ca7);
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  h1 { color:#fff; text-shadow:2px 2px #444; margin-top:26px; }
+  #startBtn { margin-top:20px; padding:10px 18px; border-radius:8px; border:none; background:#ff7aa2; color:#fff; cursor:pointer; font-weight:700; z-index:2; position:relative; }
+  #status { margin-top:10px; color:#fff; }
+  #cake-container { position:relative; margin-top:20px; }
+  #cake { width:480px; height:auto; display:block; } /* smaller height */
+  .candle { position:absolute; width:12px; height:60px; background:#fff; border-radius:3px; top: -62px; transform:translateX(-50%); }
+  .flame { position:absolute; top:-20px; left:0; width:12px; height:20px; border-radius:50%; background:radial-gradient(circle at center, yellow 40%, orange 70%, transparent 100%); animation:flicker .18s infinite alternate; }
+  @keyframes flicker { from{transform:scale(1) translateY(0)} to{transform:scale(1.18) translateY(-2px)} }
+  #message { display:none; margin-top:18px; font-size:1.2rem; color:#fff; }
+  .home-btn { margin-top:12px; padding:8px 14px; border-radius:8px; border:none; background:#ff66b2; color:#fff; cursor:pointer; font-weight:700; }
+  canvas { position:fixed; top:0; left:0; pointer-events:none; z-index:999; }
+</style>
 </head>
 <body>
-  <h1>🎂 Blow the 17 Candles, Mahta!</h1>
-  <button id="startBtn">🎤 Enable Microphone</button>
-  <div id="status">Click & allow microphone, then blow to extinguish one candle per blow.</div>
+<h1>🎂 Blow the 17 Candles, Mahta!</h1>
+<button id="startBtn">🎤 Enable Microphone</button>
+<div id="status">Click & allow microphone, then blow to extinguish one candle per blow.</div>
 
-  <div id="cake"></div>
+<div id="cake-container">
+  <!-- Cake PNG without candles -->
+  <img id="cake" src="cake-no-candles.png" alt="Cake" />
+</div>
 
-  <div id="message">🎉 All 17 candles are out! Happy 17th Birthday, Mahta! 🎉</div>
-  <button class="home-btn" onclick="location.href='index.html'">🏠 Back to Home</button>
-  <canvas id="confetti"></canvas>
+<div id="message">🎉 All 17 candles are out! Happy 17th Birthday, Mahta! 🎉</div>
+<button class="home-btn" onclick="location.href='index.html'">🏠 Back to Home</button>
 
-  <script>
-    const cake = document.getElementById('cake');
-    const startBtn = document.getElementById('startBtn');
-    const status = document.getElementById('status');
-    const message = document.getElementById('message');
-    const confCanvas = document.getElementById('confetti');
-    const confCtx = confCanvas.getContext('2d');
+<canvas id="confetti"></canvas>
 
-    // create 17 candles spaced across 680px width
-    const total = 17;
-    const cakeWidth = 680;
-    for(let i=0;i<total;i++){
-      const c = document.createElement('div');
-      c.className = 'candle';
-      const left = 10 + i * ((cakeWidth-20) / (total-1)); // px
-      c.style.left = left + 'px';
-      const f = document.createElement('div');
-      f.className = 'flame';
-      c.appendChild(f);
-      cake.appendChild(c);
-    }
+<script>
+const cakeContainer = document.getElementById('cake-container');
+const startBtn = document.getElementById('startBtn');
+const status = document.getElementById('status');
+const message = document.getElementById('message');
+const confCanvas = document.getElementById('confetti');
+const confCtx = confCanvas.getContext('2d');
 
-    let blown = 0;
-    function blowOutOne(){
-      const flames = cake.querySelectorAll('.flame');
-      if(flames.length === 0) return;
-      flames[0].remove();
-      blown++;
-      if(blown >= total){
-        message.style.display = 'block';
-        startConfettiShort(3000);
+// create 17 candles on top of cake
+const total = 17;
+for(let i=0;i<total;i++){
+  const candle = document.createElement('div');
+  candle.className='candle';
+  const left = 20 + i*((480-40)/(total-1)); // spacing within cake width (480px)
+  candle.style.left = left+'px';
+  const flame = document.createElement('div');
+  flame.className='flame';
+  candle.appendChild(flame);
+  cakeContainer.appendChild(candle);
+}
+
+let blown=0;
+function blowOutOne(){
+  const flames = cakeContainer.querySelectorAll('.flame');
+  if(flames.length===0) return;
+  flames[0].remove();
+  blown++;
+  if(blown>=total){
+    message.style.display='block';
+    startConfettiShort(3000);
+  }
+}
+
+// mic detection
+let lastBlow=0;
+async function initMic(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    status.textContent='Microphone enabled — blow into mic to extinguish candles!';
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize=2048;
+    source.connect(analyser);
+    const data = new Uint8Array(analyser.fftSize);
+
+    function detect(){
+      analyser.getByteTimeDomainData(data);
+      let sum=0;
+      for(let i=0;i<data.length;i++){
+        const v=(data[i]-128)/128;
+        sum+=v*v;
       }
-    }
-
-    // mic detection
-    let lastBlow = 0;
-    async function initMic(){
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        status.textContent = 'Microphone enabled — blow into mic to extinguish candles!';
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        await audioCtx.resume();
-        const source = audioCtx.createMediaStreamSource(stream);
-        const analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 2048;
-        source.connect(analyser);
-        const data = new Uint8Array(analyser.fftSize);
-
-        function detect(){
-          analyser.getByteTimeDomainData(data);
-          let sum = 0;
-          for(let i=0;i<data.length;i++){
-            const v = (data[i] - 128) / 128;
-            sum += v*v;
-          }
-          const rms = Math.sqrt(sum / data.length);
-          // threshold and cooldown to avoid many candles from one blow
-          if(rms > 0.12 && (Date.now() - lastBlow) > 700){
-            lastBlow = Date.now();
-            blowOutOne();
-          }
-          requestAnimationFrame(detect);
-        }
-        detect();
-      } catch (e){
-        status.textContent = 'Microphone access blocked or not available. Please allow microphone.';
-        console.error(e);
+      const rms=Math.sqrt(sum/data.length);
+      if(rms>0.12 && (Date.now()-lastBlow)>700){
+        lastBlow=Date.now();
+        blowOutOne();
       }
+      requestAnimationFrame(detect);
     }
+    detect();
+  } catch(e){
+    status.textContent='Microphone access blocked or not available. Please allow microphone.';
+    console.error(e);
+  }
+}
 
-    startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
-      initMic();
+startBtn.addEventListener('click', ()=>{
+  startBtn.style.display='none';
+  initMic();
+});
+
+// little confetti when all candles out
+function resizeConf(){ confCanvas.width=innerWidth; confCanvas.height=innerHeight; }
+addEventListener('resize',resizeConf); resizeConf();
+
+function startConfettiShort(ms){
+  let pieces=[];
+  for(let i=0;i<200;i++){
+    pieces.push({x:Math.random()*confCanvas.width, y:-Math.random()*confCanvas.height, s:Math.random()*8+4, c:`hsl(${Math.random()*360},100%,50%)`, vx:(Math.random()-0.5)*2, vy:Math.random()*4+2});
+  }
+  let running=true;
+  function step(){
+    confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
+    pieces.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      confCtx.fillStyle=p.c; confCtx.fillRect(p.x,p.y,p.s,p.s);
     });
-
-    // little confetti when all out
-    function resizeConf(){ confCanvas.width = innerWidth; confCanvas.height = innerHeight; }
-    addEventListener('resize', resizeConf); resizeConf();
-
-    function startConfettiShort(ms){
-      let pieces = [];
-      for(let i=0;i<200;i++){
-        pieces.push({ x: Math.random()*confCanvas.width, y: -Math.random()*confCanvas.height, s: Math.random()*8+4, c: `hsl(${Math.random()*360},100%,50%)`, vx:(Math.random()-0.5)*2, vy: Math.random()*4+2 });
-      }
-      let running = true;
-      function step(){
-        confCtx.clearRect(0,0,confCanvas.width,confCanvas.height);
-        pieces.forEach((p,i)=>{
-          p.x += p.vx; p.y += p.vy;
-          confCtx.fillStyle = p.c; confCtx.fillRect(p.x,p.y,p.s,p.s);
-        });
-        if(running) requestAnimationFrame(step);
-      }
-      step();
-      setTimeout(()=>{ running=false; confCtx.clearRect(0,0,confCanvas.width,confCanvas.height); }, ms);
-    }
-  </script>
+    if(running) requestAnimationFrame(step);
+  }
+  step();
+  setTimeout(()=>{ running=false; confCtx.clearRect(0,0,confCanvas.width,confCanvas.height); }, ms);
+}
+</script>
 </body>
 </html>
