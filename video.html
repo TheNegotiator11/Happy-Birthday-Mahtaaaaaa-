@@ -1,108 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Birthday Video for Mahta</title>
   <style>
-    body {
-      margin: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
+    body { margin:0; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; overflow:hidden; }
     iframe {
-      width: 90%;
-      height: 80%;
-      border: 5px solid #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(255,255,255,0.5);
-      z-index: 1;
-    }
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 2;
+      width:90%;
+      height:80%;
+      border:5px solid #fff;
+      border-radius:10px;
+      box-shadow:0 0 20px rgba(255,255,255,0.35);
+      z-index:1;
     }
     .home-btn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #ff66b2;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      z-index: 3;
+      margin-top:12px;
+      padding:10px 18px;
+      background:#ff66b2;
+      color:white;
+      font-weight:700;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      z-index:3;
     }
-    .home-btn:hover {
-      background: #ff3385;
-      transform: scale(1.05);
-    }
+    canvas { position:fixed; left:0; top:0; pointer-events:none; z-index:2; }
   </style>
 </head>
 <body>
-  <!-- Embedded Google Drive video -->
-  <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay"></iframe>
+  <!-- Google Drive preview link (use /preview) -->
+  <iframe src="https://drive.google.com/file/d/1-Cm2LN9XiBZk6a0muZV-7Ne20w4QTz92/preview" allow="autoplay; encrypted-media" ></iframe>
 
-  <!-- Back button -->
-  <button class="home-btn" onclick="window.location.href='index.html'">🎂 Back to Home</button>
+  <button class="home-btn" onclick="location.href='index.html'">🎂 Back to Home</button>
 
   <canvas id="confetti"></canvas>
 
   <script>
+    // confetti for only 5 seconds
     const canvas = document.getElementById('confetti');
     const ctx = canvas.getContext('2d');
-    let confetti = [];
-    let animationId;
+    let confetti = [], raf;
+    function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+    addEventListener('resize', resize); resize();
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    function make(){ return { x: Math.random()*canvas.width, y: -Math.random()*canvas.height, s: Math.random()*8+4, c: `hsl(${Math.random()*360},100%,50%)`, vx: (Math.random()-0.5)*1.5, vy: Math.random()*3+2 }; }
+    for(let i=0;i<150;i++) confetti.push(make());
 
-    function createConfetti() {
-      return {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height - canvas.height,
-        size: Math.random() * 8 + 4,
-        color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-        speed: Math.random() * 3 + 2,
-        drift: Math.random() - 0.5
-      };
-    }
-
-    function updateConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      confetti.forEach((c, i) => {
-        c.y += c.speed;
-        c.x += c.drift;
-        ctx.fillStyle = c.color;
-        ctx.fillRect(c.x, c.y, c.size, c.size);
-        if (c.y > canvas.height) confetti[i] = createConfetti();
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      confetti.forEach((p,i)=>{
+        p.x += p.vx; p.y += p.vy;
+        ctx.fillStyle = p.c; ctx.fillRect(p.x,p.y,p.s,p.s);
+        if(p.y > canvas.height) confetti[i] = make();
       });
-      animationId = requestAnimationFrame(updateConfetti);
+      raf = requestAnimationFrame(draw);
     }
+    draw();
 
-    // Start confetti immediately
-    for (let i = 0; i < 150; i++) confetti.push(createConfetti());
-    updateConfetti();
-
-    // Stop after 5 seconds
-    setTimeout(() => {
-      cancelAnimationFrame(animationId);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }, 5000);
+    // stop after 5s
+    setTimeout(()=>{ cancelAnimationFrame(raf); ctx.clearRect(0,0,canvas.width,canvas.height); }, 5000);
   </script>
 </body>
 </html>
